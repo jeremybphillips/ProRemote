@@ -1,146 +1,108 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import clsx from 'clsx';
-import { withStyles } from '@material-ui/core/styles';
-import Divider from '@material-ui/core/Divider';
+import { makeStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import HomeIcon from '@material-ui/icons/Home';
-import PeopleIcon from '@material-ui/icons/People';
-import DnsRoundedIcon from '@material-ui/icons/DnsRounded';
-import PermMediaOutlinedIcon from '@material-ui/icons/PhotoSizeSelectActual';
-import PublicIcon from '@material-ui/icons/Public';
-import SettingsEthernetIcon from '@material-ui/icons/SettingsEthernet';
-import SettingsInputComponentIcon from '@material-ui/icons/SettingsInputComponent';
-import TimerIcon from '@material-ui/icons/Timer';
 import SettingsIcon from '@material-ui/icons/Settings';
-import PhonelinkSetupIcon from '@material-ui/icons/PhonelinkSetup';
+import ArrowForwardIosIcon from '@material-ui/icons/ArrowForwardIos';
+import SearchField from './form/SearchField';
 
-const categories = [
-  {
-    id: 'Develop',
-    children: [
-      { id: 'Authentication', icon: <PeopleIcon />, active: true },
-      { id: 'Database', icon: <DnsRoundedIcon /> },
-      { id: 'Storage', icon: <PermMediaOutlinedIcon /> },
-      { id: 'Hosting', icon: <PublicIcon /> },
-      { id: 'Functions', icon: <SettingsEthernetIcon /> },
-      { id: 'ML Kit', icon: <SettingsInputComponentIcon /> },
-    ],
-  },
-  {
-    id: 'Quality',
-    children: [
-      { id: 'Analytics', icon: <SettingsIcon /> },
-      { id: 'Performance', icon: <TimerIcon /> },
-      { id: 'Test Lab', icon: <PhonelinkSetupIcon /> },
-    ],
-  },
-];
+const library = ['Almighty God.pro6','Amazing Grace.pro6','Amazing Grace 2.pro6','Announcements Slides.pro6','Awards.pro6','Blank Slide.pro6','Communion Image.pro6','Couple Corner.pro6','Everlasting God.pro6','Giving & Announcements Slides.pro6','Glorious.pro6','He Knows My Name.pro6','How Great is Our God.pro6','In Jesus Name.pro6','Intro Videos.pro6','It came upon a Midnight Clear.pro6','Meet and Greet Slides.pro6','Now behold the lamb .pro6','Offering Slides.pro6','Player & Meet and Greet Slides.pro6','Rez Power.pro6','Scripture Reading.pro6','See You Next Week.pro6','Sermon 01-14-18.pro6','Sermon 08-06-17.pro6','Teaching Slides.pro6','Testimony.pro6','Untitled.pro6','Welcome To ProPresenter 6.pro6','What Can I Do.pro6','You Are My Strenght.pro6','You Waited.pro6'];
 
-const styles = theme => ({
-  categoryHeader: {
-    paddingTop: theme.spacing(2),
-    paddingBottom: theme.spacing(2),
-  },
-  categoryHeaderPrimary: {
-    color: theme.palette.common.white,
-  },
-  item: {
-    paddingTop: 1,
-    paddingBottom: 1,
-    color: 'rgba(255, 255, 255, 0.7)',
-    '&:hover,&:focus': {
-      backgroundColor: 'rgba(255, 255, 255, 0.08)',
+const useStyles = makeStyles(theme => ({
+    categoryHeader: {
+        paddingTop: theme.spacing(2),
+        paddingBottom: theme.spacing(2),
     },
-  },
-  itemCategory: {
-    backgroundColor: '#232f3e',
-    boxShadow: '0 -1px 0 #404854 inset',
-    paddingTop: theme.spacing(2),
-    paddingBottom: theme.spacing(2),
-  },
-  firebase: {
-    fontSize: 24,
-    color: theme.palette.common.white,
-  },
-  itemActiveItem: {
-    color: '#4fc3f7',
-  },
-  itemPrimary: {
-    fontSize: 'inherit',
-  },
-  itemIcon: {
-    minWidth: 'auto',
-    marginRight: theme.spacing(2),
-  },
-  divider: {
-    marginTop: theme.spacing(2),
-  },
-});
+    categoryHeaderPrimary: {
+        color: theme.palette.common.white,
+    },
+    item: {
+        paddingTop: theme.spacing(1),
+        paddingBottom: theme.spacing(1),
+        color: 'rgba(255, 255, 255, 0.7)',
+        '&:hover,&:focus': {
+            backgroundColor: 'rgba(255, 255, 255, 0.08)',
+        },
+    },
+    itemCategory: {
+        backgroundColor: '#232f3e',
+        boxShadow: '0 -1px 0 #404854 inset',
+        paddingTop: theme.spacing(2),
+        paddingBottom: theme.spacing(2),
+    },
+    firebase: {
+        fontSize: 24,
+        color: theme.palette.common.white,
+    },
+    itemActiveItem: {
+        color: '#4fc3f7',
+    },
+    itemPrimary: {
+        fontSize: 'inherit',
+    },
+    itemText: {
+        fontSize: 22,
+    },
+    itemIcon: {
+        minWidth: 'auto',
+        marginRight: theme.spacing(2),
+    },
+}));
 
-function Navigator(props) {
-  const { classes, ...other } = props;
+function SongListItem({ children, onClick, song, ...other }) {
+    const handleClick = () => {
+        onClick(song);
+    };
 
-  return (
-    <Drawer variant="permanent" {...other}>
-      <List disablePadding>
-        <ListItem className={clsx(classes.firebase, classes.item, classes.itemCategory)}>
-          Paperbase
+    return (
+        <ListItem {...other} onClick={handleClick}>
+            {children}
         </ListItem>
-        <ListItem className={clsx(classes.item, classes.itemCategory)}>
-          <ListItemIcon className={classes.itemIcon}>
-            <HomeIcon />
-          </ListItemIcon>
-          <ListItemText
-            classes={{
-              primary: classes.itemPrimary,
-            }}
-          >
-            Project Overview
-          </ListItemText>
-        </ListItem>
-        {categories.map(({ id, children }) => (
-          <React.Fragment key={id}>
-            <ListItem className={classes.categoryHeader}>
-              <ListItemText
-                classes={{
-                  primary: classes.categoryHeaderPrimary,
-                }}
-              >
-                {id}
-              </ListItemText>
-            </ListItem>
-            {children.map(({ id: childId, icon, active }) => (
-              <ListItem
-                key={childId}
-                button
-                className={clsx(classes.item, active && classes.itemActiveItem)}
-              >
-                <ListItemIcon className={classes.itemIcon}>{icon}</ListItemIcon>
-                <ListItemText
-                  classes={{
-                    primary: classes.itemPrimary,
-                  }}
-                >
-                  {childId}
-                </ListItemText>
-              </ListItem>
-            ))}
-
-            <Divider className={classes.divider} />
-          </React.Fragment>
-        ))}
-      </List>
-    </Drawer>
-  );
+    );
 }
 
-Navigator.propTypes = {
-  classes: PropTypes.object.isRequired,
-};
+function Navigator({ ...other }) {
+    const classes = useStyles();
+    const handleClick = (song) => {
+        console.log(song);
+    };
 
-export default withStyles(styles)(Navigator);
+    return (
+        <Drawer variant="permanent" {...other}>
+            <List disablePadding>
+                <ListItem className={clsx(classes.firebase, classes.item, classes.itemCategory)}>
+                    ProRemote
+                </ListItem>
+                <ListItem className={clsx(classes.item, classes.itemCategory)}>
+                    <ListItemIcon className={classes.itemIcon}>
+                        <SettingsIcon />
+                    </ListItemIcon>
+                    <ListItemText classes={{ primary: classes.itemPrimary }}>
+                        Settings
+                    </ListItemText>
+                </ListItem>
+                <ListItem className={classes.categoryHeader}>
+                    <ListItemText classes={{ primary: classes.categoryHeaderPrimary }}>
+                        <SearchField />
+                    </ListItemText>
+                </ListItem>
+                {library.map((song, i) => (
+                    <SongListItem key={i} button song={ song } className={clsx(classes.item, classes.itemActiveItem)} onClick={handleClick}>
+                        <ListItemText className={classes.itemText}>
+                            { song.split('.')[0] }
+                        </ListItemText>
+                        <ListItemIcon className={classes.itemIcon}>
+                            <ArrowForwardIosIcon />
+                        </ListItemIcon>
+                    </SongListItem>
+                ))}
+            </List>
+        </Drawer>
+    );
+}
+
+export default Navigator;
