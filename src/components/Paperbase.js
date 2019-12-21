@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
-import PropTypes from 'prop-types';
 import { createMuiTheme, ThemeProvider, withStyles } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import Hidden from '@material-ui/core/Hidden';
 import Typography from '@material-ui/core/Typography';
 import Link from '@material-ui/core/Link';
 import Navigator from './Navigator';
-import Content from './Content';
+import Slide from './Slide';
 import Header from './Header';
 
 function Copyright() {
@@ -14,7 +13,7 @@ function Copyright() {
         <Typography variant="body2" color="textSecondary" align="center">
             {'Copyright © '}
             <Link color="inherit" href="https://material-ui.com/">
-                Your Website
+                Brenton Development
             </Link>{' '}
             {new Date().getFullYear()}
             {'.'}
@@ -145,15 +144,13 @@ const styles = {
             flexShrink: 0,
         },
     },
-    app: {
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-    },
     main: {
         flex: 1,
-        padding: theme.spacing(6, 4),
+        display: 'flex',
+        padding: theme.spacing(2, 2),
         background: '#eaeff1',
+        flexDirection: 'row',
+        flexWrap: 'wrap',
     },
     footer: {
         padding: theme.spacing(2),
@@ -186,10 +183,10 @@ function Paperbase(props) {
                         <Navigator PaperProps={{ style: { width: drawerWidth } }} />
                     </Hidden>
                 </nav>
-                <div className={classes.app}>
+                <div>
                     <Header onDrawerToggle={handleDrawerToggle} />
                     <main className={classes.main}>
-                        <Content />
+                        {Array(20).fill().map((x, i) => <Slide key={i} />)}
                     </main>
                     <footer className={classes.footer}>
                         <Copyright />
@@ -199,9 +196,5 @@ function Paperbase(props) {
         </ThemeProvider>
     );
 }
-
-Paperbase.propTypes = {
-    classes: PropTypes.object.isRequired,
-};
 
 export default withStyles(styles)(Paperbase);
