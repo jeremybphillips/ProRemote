@@ -1,4 +1,4 @@
-import React, { useState, useEffect  } from 'react';
+import React, { useState  } from 'react';
 import clsx from 'clsx';
 import TextField from '@material-ui/core/TextField';
 import Paper from '@material-ui/core/Paper';
@@ -56,9 +56,9 @@ function SearchField({ ...other }){
         setValue(e.target.value);
     };
 
-    const handleSearchRequest = (value) => {
-        console.log(value.trim());
-    };
+    // const handleSearchRequest = (value) => {
+    //     console.log(value.trim());
+    // };
 
     const handleClear = () => {
         setValue('');
