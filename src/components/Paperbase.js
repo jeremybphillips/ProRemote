@@ -159,11 +159,18 @@ const styles = {
 };
 
 function Paperbase(props) {
-    const { classes } = props;
     const [mobileOpen, setMobileOpen] = useState(false);
+    const [activeSlide, setActiveSlide] = useState();
+    const { classes } = props;
+
+    //useEffect();
 
     const handleDrawerToggle = () => {
         setMobileOpen(!mobileOpen);
+    };
+
+    const onSlideClick = (index) => {
+        setActiveSlide(index);
     };
 
     return (
@@ -186,7 +193,7 @@ function Paperbase(props) {
                 <div>
                     <Header onDrawerToggle={handleDrawerToggle} />
                     <main className={classes.main}>
-                        {Array(20).fill().map((x, i) => <Slide key={i} />)}
+                        {Array(20).fill().map((x, i) => <Slide active={i === activeSlide} key={i} index={i} onClick={onSlideClick} />)}
                     </main>
                     <footer className={classes.footer}>
                         <Copyright />

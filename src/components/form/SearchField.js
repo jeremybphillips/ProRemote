@@ -64,10 +64,6 @@ function SearchField({ ...other }){
         setValue('');
     };
 
-    useEffect(() => {
-        handleSearchRequest(value);
-    });
-
     return (
         <Paper className={classes.root}>
             <IconButton

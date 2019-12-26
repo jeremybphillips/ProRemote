@@ -2,6 +2,7 @@ import React from 'react';
 import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
 import { makeStyles } from '@material-ui/core/styles';
+import clsx from 'clsx';
 
 const useStyles = makeStyles(theme => ({
     paper: {
@@ -43,6 +44,11 @@ const useStyles = makeStyles(theme => ({
     addUser: {
         marginRight: theme.spacing(1),
     },
+    active: {
+        borderColor: '#FDDE44',
+        borderStyle: 'solid',
+        borderWidth: 7
+    }
 }));
 
 const preso = {
@@ -112,13 +118,15 @@ function calcRgba(slideColor) {
     return `rgba(${colors}, ${a})`;
 }
 
-function Slide() {
+function Slide(props) {
     const classes = useStyles();
-
+    const { active, onClick, index } = props;
     let { slideText, slideColor } = preso.presentation.presentationSlideGroups[1].groupSlides[0];
 
+    const onSlideClick = () => onClick(index);
+
     return (
-        <Paper className={classes.paper}>
+        <Paper className={clsx(classes.paper, { [classes.active]: active })} onClick={onSlideClick}>
             <div className={classes.slideContent}>
                 <Typography component="div" color="textSecondary" align="center" className={classes.slideText}>
                     {slideText.split('\n').map((item, i) => <p key={i}>{item}</p>)}
