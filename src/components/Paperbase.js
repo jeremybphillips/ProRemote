@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createMuiTheme, ThemeProvider, withStyles } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import Hidden from '@material-ui/core/Hidden';
@@ -7,6 +7,7 @@ import Link from '@material-ui/core/Link';
 import Navigator from './Navigator';
 import Slide from './Slide';
 import Header from './Header';
+import ProService from '../util/PropresenterService';
 
 function Copyright() {
     return (
@@ -25,7 +26,7 @@ let theme = createMuiTheme({
     palette: {
         primary: {
             light: '#63ccff',
-            main: '#009be5',
+            main: '#1976d2',
             dark: '#006db3',
         },
     },
@@ -127,7 +128,7 @@ theme = {
                 width: 32,
                 height: 32,
             },
-        },
+        }
     },
 };
 
@@ -147,6 +148,11 @@ const styles = {
     main: {
         flex: 1,
         display: 'flex',
+        flexDirection: 'column',
+    },
+    slidesection: {
+        flex: 1,
+        display: 'flex',
         padding: theme.spacing(2, 2),
         background: '#eaeff1',
         flexDirection: 'row',
@@ -163,13 +169,16 @@ function Paperbase(props) {
     const [activeSlide, setActiveSlide] = useState();
     const { classes } = props;
 
-    //useEffect();
+    useEffect(() => {
+        ProService.connect('192.168.5.151');
+    }, []);
 
     const handleDrawerToggle = () => {
         setMobileOpen(!mobileOpen);
     };
 
     const onSlideClick = (index) => {
+        console.log(ProService.currentPresentation);
         setActiveSlide(index);
     };
 
@@ -190,10 +199,10 @@ function Paperbase(props) {
                         <Navigator PaperProps={{ style: { width: drawerWidth } }} />
                     </Hidden>
                 </nav>
-                <div>
+                <div className={classes.main}>
                     <Header onDrawerToggle={handleDrawerToggle} />
-                    <main className={classes.main}>
-                        {Array(20).fill().map((x, i) => <Slide active={i === activeSlide} key={i} index={i} onClick={onSlideClick} />)}
+                    <main className={classes.slidesection}>
+                        {Array(0).fill().map((x, i) => <Slide active={i === activeSlide} key={i} index={i} onClick={onSlideClick} />)}
                     </main>
                     <footer className={classes.footer}>
                         <Copyright />

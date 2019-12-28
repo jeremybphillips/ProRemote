@@ -7,8 +7,10 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import SettingsIcon from '@material-ui/icons/Settings';
+//import Typography from '@material-ui/core/Typography';
 import ArrowForwardIosIcon from '@material-ui/icons/ArrowForwardIos';
 import SearchField from './form/SearchField';
+import ProService from '../util/PropresenterService';
 
 const library = ['Almighty God.pro6','Amazing Grace.pro6','Amazing Grace 2.pro6','Announcements Slides.pro6','Awards.pro6','Blank Slide.pro6','Communion Image.pro6','Couple Corner.pro6','Everlasting God.pro6','Giving & Announcements Slides.pro6','Glorious.pro6','He Knows My Name.pro6','How Great is Our God.pro6','In Jesus Name.pro6','Intro Videos.pro6','It came upon a Midnight Clear.pro6','Meet and Greet Slides.pro6','Now behold the lamb .pro6','Offering Slides.pro6','Player & Meet and Greet Slides.pro6','Rez Power.pro6','Scripture Reading.pro6','See You Next Week.pro6','Sermon 01-14-18.pro6','Sermon 08-06-17.pro6','Teaching Slides.pro6','Testimony.pro6','Untitled.pro6','Welcome To ProPresenter 6.pro6','What Can I Do.pro6','You Are My Strenght.pro6','You Waited.pro6'];
 
@@ -53,22 +55,18 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-function SongListItem({ children, onClick, song, ...other }) {
-    const handleClick = () => {
-        onClick(song);
-    };
-
-    return (
-        <ListItem {...other} onClick={handleClick}>
-            {children}
-        </ListItem>
-    );
-}
-
 function Navigator({ ...other }) {
     const classes = useStyles();
-    const handleClick = (song) => {
-        console.log(song);
+
+    const handleClick = (e) => {
+        const pres = e.currentTarget.getAttribute('presentation');
+
+        ProService.getPresentation(pres);
+
+        //console.log(pres.split('.')[0]);
+        //console.log(ProService.setCurrentPresentation(pres));
+        //ProService.currentPresentation = pres;
+        //console.log(ProService.currentPresentation);
     };
 
     return (
@@ -90,15 +88,15 @@ function Navigator({ ...other }) {
                         <SearchField />
                     </ListItemText>
                 </ListItem>
-                {library.map((song, i) => (
-                    <SongListItem key={i} button song={ song } className={clsx(classes.item, classes.itemActiveItem)} onClick={handleClick}>
+                {library.map((pres, i) => (
+                    <ListItem key={i} button presentation={ pres } className={clsx(classes.item, classes.itemActiveItem)} onClick={handleClick}>
                         <ListItemText className={classes.itemText}>
-                            { song.split('.')[0] }
+                            { pres.split('.')[0] }
                         </ListItemText>
                         <ListItemIcon className={classes.itemIcon}>
                             <ArrowForwardIosIcon />
                         </ListItemIcon>
-                    </SongListItem>
+                    </ListItem>
                 ))}
             </List>
         </Drawer>
