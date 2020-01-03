@@ -1,5 +1,5 @@
 
-function getSlides(slideGroups) {
+function getSlidesFromResponse(slideGroups) {
     return slideGroups.reduce((acc, curr) => {
         return [...acc, ...curr.groupSlides];
     }, []);
@@ -7,8 +7,6 @@ function getSlides(slideGroups) {
 
 class ProPresenterService {
     constructor() {
-        //this.remoteIp = null;
-        //this.port = null;
         this.password = null;
         this.socket = null;
         this.currentPresentation = '';
@@ -40,10 +38,15 @@ class ProPresenterService {
     emit(obj) {
         const json = JSON.stringify(obj);
         if (this.checkSocket()) {
-            this.socket.send(json);
-        } else {
-            console.error('SOCKET EMIT FAILED');
+            return new Promise((res, rej) => {
+                this.socket.onmessage = this.handleMessage(res, rej);
+                this.socket.send(json);
+            });
         }
+
+        console.error('SOCKET EMIT FAILED');
+
+        return false;
     }
 
     connect(remoteIp = '', password = 'control', port = 50001) {
@@ -62,7 +65,11 @@ class ProPresenterService {
         const me = this;
 
         this.socket.onopen = function() {
-            me.authenticate();
+            me.authenticate().then(() => {
+                window.onbeforeunload = () => {
+                    this.socket.close();
+                };
+            });
         };
 
         this.socket.onerror = function(err) {
@@ -73,10 +80,11 @@ class ProPresenterService {
             console.log('WebSocket closed.');
             this.socket = null;
         };
+    }
 
-        this.socket.onmessage = function(event) {
+    handleMessage(res, rej) {
+        return (event) => {
             const msg = JSON.parse(event.data);
-            //console.log(msg);
 
             switch (msg.action) {
             case 'authenticate':
@@ -85,43 +93,77 @@ class ProPresenterService {
                 }
 
                 console.log(`authenticated: ${msg.authenticated === 1 && msg.controller === 1}`);
+                res();
                 break;
             case 'libraryRequest':
-                //libraries = msg.library;
+                res(msg.library);
                 break;
             case 'playlistRequestAll':
-                //playlists = msg.playlistAll;
+                res(msg.playlistAll);
                 break;
             case 'presentationSlideIndex':
-                //slideIndex = msg.slideIndex;
+                res(msg.slideIndex);
                 break;
             case 'presentationTriggerIndex':
-                //slideIndex = msg.slideIndex;
-                //activePresentation = msg.presentationPath;
-
-                //document.getElementById("userlistbox").innerHTML = ul;
+                res(msg.slideIndex, msg.presentationPath);
                 break;
             case 'presentationCurrent':
-                getSlides(msg.presentation.presentationSlideGroups);
-                console.log(getSlides(msg.presentation.presentationSlideGroups));
+                res({
+                    name: msg.presentation.presentationName,
+                    slides: getSlidesFromResponse(msg.presentation.presentationSlideGroups)
+                });
                 break;
             }
         };
     }
 
     authenticate() {
-        this.emit({
+        return this.emit({
             action: 'authenticate',
             protocol: '600',
             password: this.password
         });
     }
 
+    getLibrary() {
+        const library = localStorage.getItem('library');
+
+        if(library) {
+            return Promise.resolve(JSON.parse(library));
+        }
+
+        return this.emit({
+            action: 'libraryRequest'
+        }).then((data) => {
+            localStorage.setItem('library', JSON.stringify(data));
+            return data;
+        });
+    }
+
     getPresentation(path) {
-        this.emit({
+        return this.emit({
             action: 'presentationRequest',
             presentationPath: path,
             presentationSlideQuality: 25
+        });
+    }
+
+    getCurrentPresentation() {
+        return this.emit({
+            action: 'presentationCurrent',
+            presentationSlideQuality: 25
+        });
+    }
+
+    getCurrentSlide() {
+        return this.emit({ action: 'presentationSlideIndex' });
+    }
+
+    triggerSlide(n, path) {
+        return this.emit({
+            action: 'presentationTriggerIndex',
+            slideIndex: n,
+            presentationPath: path
         });
     }
 }

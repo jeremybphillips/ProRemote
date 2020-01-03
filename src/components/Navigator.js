@@ -7,14 +7,18 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import SettingsIcon from '@material-ui/icons/Settings';
+import RefreshIcon from '@material-ui/icons/Refresh';
 //import Typography from '@material-ui/core/Typography';
 import ArrowForwardIosIcon from '@material-ui/icons/ArrowForwardIos';
 import SearchField from './form/SearchField';
 import ProService from '../util/PropresenterService';
-
-const library = ['Almighty God.pro6','Amazing Grace.pro6','Amazing Grace 2.pro6','Announcements Slides.pro6','Awards.pro6','Blank Slide.pro6','Communion Image.pro6','Couple Corner.pro6','Everlasting God.pro6','Giving & Announcements Slides.pro6','Glorious.pro6','He Knows My Name.pro6','How Great is Our God.pro6','In Jesus Name.pro6','Intro Videos.pro6','It came upon a Midnight Clear.pro6','Meet and Greet Slides.pro6','Now behold the lamb .pro6','Offering Slides.pro6','Player & Meet and Greet Slides.pro6','Rez Power.pro6','Scripture Reading.pro6','See You Next Week.pro6','Sermon 01-14-18.pro6','Sermon 08-06-17.pro6','Teaching Slides.pro6','Testimony.pro6','Untitled.pro6','Welcome To ProPresenter 6.pro6','What Can I Do.pro6','You Are My Strenght.pro6','You Waited.pro6'];
+import { connect } from 'react-redux';
 
 const useStyles = makeStyles(theme => ({
+    appTitle: {
+        backgroundColor: '#232f3e',
+        boxShadow: '0 -1px 0 #404854 inset'
+    },
     categoryHeader: {
         paddingTop: theme.spacing(2),
         paddingBottom: theme.spacing(2),
@@ -30,21 +34,12 @@ const useStyles = makeStyles(theme => ({
             backgroundColor: 'rgba(255, 255, 255, 0.08)',
         },
     },
-    itemCategory: {
-        backgroundColor: '#232f3e',
-        boxShadow: '0 -1px 0 #404854 inset',
-        paddingTop: theme.spacing(2),
-        paddingBottom: theme.spacing(2),
-    },
     firebase: {
         fontSize: 24,
         color: theme.palette.common.white,
     },
     itemActiveItem: {
         color: '#4fc3f7',
-    },
-    itemPrimary: {
-        fontSize: 'inherit',
     },
     itemText: {
         fontSize: 22,
@@ -53,35 +48,58 @@ const useStyles = makeStyles(theme => ({
         minWidth: 'auto',
         marginRight: theme.spacing(2),
     },
+    settingsButton: {
+        justifyContent: 'flex-end'
+    },
 }));
 
-function Navigator({ ...other }) {
+function Navigator({ library, dispatch, ...other }) {
     const classes = useStyles();
 
     const handleClick = (e) => {
         const pres = e.currentTarget.getAttribute('presentation');
 
-        ProService.getPresentation(pres);
+        ProService.getPresentation(pres).then((data) => {
+            console.log(data);
+            dispatch({
+                type: 'SET_ACTIVE_PRESENTATION',
+                presentation: data
+            });
+        });
+    };
 
-        //console.log(pres.split('.')[0]);
-        //console.log(ProService.setCurrentPresentation(pres));
-        //ProService.currentPresentation = pres;
-        //console.log(ProService.currentPresentation);
+    const onSettingsClick = () => {
+        console.log('launch modal');
+    };
+
+    const onRefreshClick = () => {
+        ProService.getLibrary().then((library) => {
+            if(!library) {
+                return;
+            }
+
+            dispatch({
+                type: 'SET_PRESENTATIONS',
+                library: library
+            });
+        });
     };
 
     return (
         <Drawer variant="permanent" {...other}>
             <List disablePadding>
-                <ListItem className={clsx(classes.firebase, classes.item, classes.itemCategory)}>
+                <ListItem className={clsx(classes.firebase, classes.item, classes.appTitle)}>
                     ProRemote
-                </ListItem>
-                <ListItem className={clsx(classes.item, classes.itemCategory)}>
-                    <ListItemIcon className={classes.itemIcon}>
-                        <SettingsIcon />
-                    </ListItemIcon>
-                    <ListItemText classes={{ primary: classes.itemPrimary }}>
-                        Settings
-                    </ListItemText>
+                    <ListItem button className={classes.settingsButton} onClick={onSettingsClick}>
+                        <ListItemIcon className={classes.itemIcon}>
+                            <SettingsIcon />
+                        </ListItemIcon>
+                    </ListItem>
+                    <ListItem button className={classes.settingsButton} onClick={onRefreshClick}>
+                        <ListItemIcon className={classes.itemIcon}>
+                            <RefreshIcon />
+                        </ListItemIcon>
+                    </ListItem>
                 </ListItem>
                 <ListItem className={classes.categoryHeader}>
                     <ListItemText classes={{ primary: classes.categoryHeaderPrimary }}>
@@ -103,4 +121,8 @@ function Navigator({ ...other }) {
     );
 }
 
-export default Navigator;
+const mapState = (state) => ({
+    library: state.library
+});
+
+export default connect(mapState)(Navigator);
