@@ -9,44 +9,35 @@ class ProPresenterService {
     constructor() {
         this.password = null;
         this.socket = null;
-        this.currentPresentation = '';
+        this.authenticated = false;
     }
 
-    // get currentPresentation() {
-    //     return this.currentPresentation;
-    // }
-
-    // set currentPresentation(pres) {
-    //     this.currentPresentation = pres;
-    // }
-
     checkSocket() {
-        let ready = true;
-
         if (!this.socket) {
             console.error('SOCKET NOT CONNECTED');
-            ready = false;
-        }
-        if (this.socket.readyState != 1) {
-            console.error('SOCKET NOT READY');
-            ready = false;
+            return false;
         }
 
-        return ready;
+        if (this.socket.readyState !== 1) {
+            console.error('SOCKET NOT READY');
+            return false;
+        }
+
+        return true;
     }
 
     emit(obj) {
         const json = JSON.stringify(obj);
-        if (this.checkSocket()) {
-            return new Promise((res, rej) => {
+
+        return new Promise((res, rej) => {
+            if (this.checkSocket()) {
                 this.socket.onmessage = this.handleMessage(res, rej);
                 this.socket.send(json);
-            });
-        }
-
-        console.error('SOCKET EMIT FAILED');
-
-        return false;
+            } else {
+                console.error('SOCKET EMIT FAILED');
+                rej();
+            }
+        });
     }
 
     connect(remoteIp = '', password = 'control', port = 50001) {
@@ -66,6 +57,7 @@ class ProPresenterService {
 
         this.socket.onopen = function() {
             me.authenticate().then(() => {
+                this.authenticated = true;
                 window.onbeforeunload = () => {
                     this.socket.close();
                 };
@@ -79,6 +71,7 @@ class ProPresenterService {
         this.socket.onclose = function() {
             console.log('WebSocket closed.');
             this.socket = null;
+            this.authenticated = false;
         };
     }
 
@@ -113,6 +106,9 @@ class ProPresenterService {
                     slides: getSlidesFromResponse(msg.presentation.presentationSlideGroups)
                 });
                 break;
+            default:
+                rej(`${msg.action} not handled.`);
+                break;
             }
         };
     }
@@ -144,14 +140,14 @@ class ProPresenterService {
         return this.emit({
             action: 'presentationRequest',
             presentationPath: path,
-            presentationSlideQuality: 25
+            presentationSlideQuality: 0
         });
     }
 
     getCurrentPresentation() {
         return this.emit({
             action: 'presentationCurrent',
-            presentationSlideQuality: 25
+            presentationSlideQuality: 0
         });
     }
 

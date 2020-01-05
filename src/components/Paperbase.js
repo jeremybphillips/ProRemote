@@ -5,7 +5,7 @@ import Hidden from '@material-ui/core/Hidden';
 import Typography from '@material-ui/core/Typography';
 import Link from '@material-ui/core/Link';
 import Navigator from './Navigator';
-import Slide from './Slide';
+import MainContent from './MainContent';
 import Header from './Header';
 import ProService from '../util/PropresenterService';
 
@@ -150,7 +150,11 @@ const styles = {
         display: 'flex',
         flexDirection: 'column',
     },
-    slidesection: {
+    footer: {
+        padding: theme.spacing(2),
+        background: '#eaeff1',
+    },
+    slideSection: {
         flex: 1,
         display: 'flex',
         padding: theme.spacing(2, 2),
@@ -158,15 +162,10 @@ const styles = {
         flexDirection: 'row',
         flexWrap: 'wrap',
     },
-    footer: {
-        padding: theme.spacing(2),
-        background: '#eaeff1',
-    },
 };
 
 function Paperbase(props) {
     const [mobileOpen, setMobileOpen] = useState(false);
-    const [activeSlide, setActiveSlide] = useState();
     const { classes } = props;
 
     useEffect(() => {
@@ -175,11 +174,6 @@ function Paperbase(props) {
 
     const handleDrawerToggle = () => {
         setMobileOpen(!mobileOpen);
-    };
-
-    const onSlideClick = (index) => {
-        console.log(ProService.currentPresentation);
-        setActiveSlide(index);
     };
 
     return (
@@ -201,8 +195,8 @@ function Paperbase(props) {
                 </nav>
                 <div className={classes.main}>
                     <Header onDrawerToggle={handleDrawerToggle} />
-                    <main className={classes.slidesection}>
-                        {Array(0).fill().map((x, i) => <Slide active={i === activeSlide} key={i} index={i} onClick={onSlideClick} />)}
+                    <main className={classes.slideSection}>
+                        <MainContent />
                     </main>
                     <footer className={classes.footer}>
                         <Copyright />

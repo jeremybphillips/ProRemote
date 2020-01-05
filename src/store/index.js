@@ -2,13 +2,17 @@ import { createStore } from 'redux';
 
 const defaultState = {
     library: [],
-    activePresentation: null,
-    activeSlide: null
+    activePresentation: {
+        name: '',
+        slides: []
+    },
+    activeSlide: null,
+    loading: false,
 };
 
 const store = createStore((state = defaultState, action) => {
     switch (action.type) {
-    case 'SET_PRESENTATIONS':
+    case 'SET_LIBRARY':
         return {
             ...state,
             library: action.library
@@ -17,6 +21,11 @@ const store = createStore((state = defaultState, action) => {
         return {
             ...state,
             activePresentation: action.presentation
+        };
+    case 'SET_LOADING_STATUS':
+        return {
+            ...state,
+            loading: action.loading
         };
     case 'SET_ACTIVE_SLIDE':
         return {

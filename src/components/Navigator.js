@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import clsx from 'clsx';
 import { makeStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
@@ -8,16 +8,20 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import SettingsIcon from '@material-ui/icons/Settings';
 import RefreshIcon from '@material-ui/icons/Refresh';
-//import Typography from '@material-ui/core/Typography';
 import ArrowForwardIosIcon from '@material-ui/icons/ArrowForwardIos';
 import SearchField from './form/SearchField';
 import ProService from '../util/PropresenterService';
 import { connect } from 'react-redux';
+import { setLibrary, setPresentation, setLoadingStatus } from '../store/actions';
 
 const useStyles = makeStyles(theme => ({
-    appTitle: {
+    appHeader: {
         backgroundColor: '#232f3e',
-        boxShadow: '0 -1px 0 #404854 inset'
+        boxShadow: '0 -1px 0 #404854 inset',
+        justifyContent: 'flex-end',
+    },
+    appTitle: {
+        marginRight: 'auto',
     },
     categoryHeader: {
         paddingTop: theme.spacing(2),
@@ -29,74 +33,84 @@ const useStyles = makeStyles(theme => ({
     item: {
         paddingTop: theme.spacing(1),
         paddingBottom: theme.spacing(1),
-        color: 'rgba(255, 255, 255, 0.7)',
+        color: 'rgba(255, 255, 255, 0.9)',
         '&:hover,&:focus': {
             backgroundColor: 'rgba(255, 255, 255, 0.08)',
+            color: '#4fc3f7',
         },
     },
     firebase: {
         fontSize: 24,
         color: theme.palette.common.white,
     },
-    itemActiveItem: {
-        color: '#4fc3f7',
-    },
     itemText: {
         fontSize: 22,
     },
-    itemIcon: {
+    headerButton: {
+        padding: theme.spacing(1),
+        width: 'auto',
+        '& svg': {
+            fontSize: 28,
+        },
+        '& .MuiListItemIcon-root': {
+            minWidth: 0,
+        }
+    },
+    arrowIcon: {
         minWidth: 'auto',
         marginRight: theme.spacing(2),
-    },
-    settingsButton: {
-        justifyContent: 'flex-end'
     },
 }));
 
 function Navigator({ library, dispatch, ...other }) {
     const classes = useStyles();
 
-    const handleClick = (e) => {
-        const pres = e.currentTarget.getAttribute('presentation');
-
-        ProService.getPresentation(pres).then((data) => {
-            console.log(data);
-            dispatch({
-                type: 'SET_ACTIVE_PRESENTATION',
-                presentation: data
-            });
-        });
-    };
+    useEffect(() => {
+        getLibrary();
+    }, []);
 
     const onSettingsClick = () => {
         console.log('launch modal');
     };
 
     const onRefreshClick = () => {
-        ProService.getLibrary().then((library) => {
+        getLibrary();
+    };
+
+    const onPresClick = async (e) => {
+        const presName = e.currentTarget.getAttribute('presentation');
+
+        dispatch(setLoadingStatus(true));
+        const presentation = await ProService.getPresentation(presName);
+        dispatch(setPresentation(presentation));
+        dispatch(setLoadingStatus(false));
+    };
+
+    const getLibrary = async () => {
+        try {
+            const library = await ProService.getLibrary();
             if(!library) {
                 return;
             }
 
-            dispatch({
-                type: 'SET_PRESENTATIONS',
-                library: library
-            });
-        });
+            dispatch(setLibrary(library));
+        } catch (e) {
+            console.error(e.message);
+        }
     };
 
     return (
         <Drawer variant="permanent" {...other}>
             <List disablePadding>
-                <ListItem className={clsx(classes.firebase, classes.item, classes.appTitle)}>
-                    ProRemote
-                    <ListItem button className={classes.settingsButton} onClick={onSettingsClick}>
-                        <ListItemIcon className={classes.itemIcon}>
+                <ListItem className={clsx(classes.firebase, classes.appHeader)}>
+                    <div className={classes.appTitle}>ProRemote</div>
+                    <ListItem button disableRipple className={classes.headerButton} onClick={onSettingsClick}>
+                        <ListItemIcon>
                             <SettingsIcon />
                         </ListItemIcon>
                     </ListItem>
-                    <ListItem button className={classes.settingsButton} onClick={onRefreshClick}>
-                        <ListItemIcon className={classes.itemIcon}>
+                    <ListItem button disableRipple className={classes.headerButton} onClick={onRefreshClick}>
+                        <ListItemIcon>
                             <RefreshIcon />
                         </ListItemIcon>
                     </ListItem>
@@ -107,11 +121,11 @@ function Navigator({ library, dispatch, ...other }) {
                     </ListItemText>
                 </ListItem>
                 {library.map((pres, i) => (
-                    <ListItem key={i} button presentation={ pres } className={clsx(classes.item, classes.itemActiveItem)} onClick={handleClick}>
+                    <ListItem key={i} button presentation={pres} className={classes.item} onClick={onPresClick}>
                         <ListItemText className={classes.itemText}>
                             { pres.split('.')[0] }
                         </ListItemText>
-                        <ListItemIcon className={classes.itemIcon}>
+                        <ListItemIcon className={classes.arrowIcon}>
                             <ArrowForwardIosIcon />
                         </ListItemIcon>
                     </ListItem>

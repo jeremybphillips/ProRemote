@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import AppBar from '@material-ui/core/AppBar';
 import Grid from '@material-ui/core/Grid';
 import Hidden from '@material-ui/core/Hidden';
@@ -7,11 +6,12 @@ import IconButton from '@material-ui/core/IconButton';
 import MenuIcon from '@material-ui/icons/Menu';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
-import { withStyles } from '@material-ui/core/styles';
+import { makeStyles } from '@material-ui/core/styles';
+import { connect } from 'react-redux';
 
 const lightColor = 'rgba(255, 255, 255, 0.7)';
 
-const styles = theme => ({
+const useStyles = makeStyles(theme => ({
     secondaryBar: {
         zIndex: 0,
     },
@@ -34,10 +34,12 @@ const styles = theme => ({
     header: {
         height: 65
     }
-});
+}));
 
 function Header(props) {
-    const { classes, onDrawerToggle, songTitle } = props;
+    const classes = useStyles();
+    let { onDrawerToggle, songTitle, loading } = props;
+    songTitle = songTitle.split('.')[0];
 
     return (
         <React.Fragment>
@@ -58,7 +60,7 @@ function Header(props) {
                         </Hidden>
                         <Grid item xs>
                             <Typography variant="h4" align="center">
-                                {songTitle}
+                                {loading ? 'Loading...' : songTitle}
                             </Typography>
                         </Grid>
                     </Grid>
@@ -68,9 +70,9 @@ function Header(props) {
     );
 }
 
-Header.propTypes = {
-    classes: PropTypes.object.isRequired,
-    onDrawerToggle: PropTypes.func.isRequired,
-};
+const mapState = (state) => ({
+    songTitle: state.activePresentation.name,
+    loading: state.loading,
+});
 
-export default withStyles(styles)(Header);
+export default connect(mapState)(Header);
