@@ -12,6 +12,7 @@ import Grid from '@material-ui/core/Grid';
 import Switch from '@material-ui/core/Switch';
 import ProService from '../../util/PropresenterService';
 import RefreshIcon from '@material-ui/icons/Refresh';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import { connect } from 'react-redux';
 import { setLibrary } from '../../store/actions';
 
@@ -69,6 +70,7 @@ const ConfigModal = withStyles(modalStyles)((props) => {
     const [checked, setChecked] = useState(connected);
     const [ipVal, setIpVal] = useState();
     const [errorMsg, setErrorMsg] = useState();
+    const [loading, setLoading] = useState();
 
     useEffect(() => {
         const ip = JSON.parse(localStorage.getItem('ip')) || ''; //'192.168.5.151';
@@ -93,14 +95,17 @@ const ConfigModal = withStyles(modalStyles)((props) => {
     const onConnectSwitchChange = (e) => {
         let val = e.currentTarget.checked;
 
-
-
         if(val) {
+            setLoading(val);
             setChecked(val);
-            ProService.connect(ipVal).catch((error) => {
-                setChecked(false);
-                setErrorMsg(error);
-            });
+            ProService.connect(ipVal)
+                .catch((error) => {
+                    setChecked(false);
+                    setErrorMsg(error);
+                })
+                .finally(() => {
+                    setLoading(false);
+                });
         } else {
             ProService.disconnect();
             setChecked(val);
@@ -135,6 +140,9 @@ const ConfigModal = withStyles(modalStyles)((props) => {
                     </Grid>
                     <Grid item>
                         <Switch disabled={!ipVal} checked={checked} onChange={onConnectSwitchChange} color="primary" />
+                    </Grid>
+                    <Grid item>
+                        {loading && <CircularProgress size={24} />}
                     </Grid>
                 </Grid>
 

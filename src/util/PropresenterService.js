@@ -62,13 +62,9 @@ class ProPresenterService {
         }
 
         return new Promise((res, rej) => {
-            try {
-                this.socket = new WebSocket(`ws://${remoteIp}:${port}/remote`);
-                this.listen(res, rej);
-            } catch (error) {
-                this.socket = null;
-                rej();
-            }
+            const protocol = window.location.protocol.split(':')[0] === 'http' ? 'ws' : 'wss';
+            this.socket = new WebSocket(`${protocol}://${remoteIp}:${port}/remote`);
+            this.listen(res, rej);
         });
     }
 
@@ -91,8 +87,9 @@ class ProPresenterService {
         };
 
         this.socket.onerror = function(err) {
-            console.error('WebSocket error');
+            //console.error('WebSocket error');
             store.dispatch(setConnected(false));
+            rej();
         };
 
         this.socket.onclose = function() {
