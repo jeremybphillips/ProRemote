@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { createMuiTheme, ThemeProvider, withStyles } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import Hidden from '@material-ui/core/Hidden';
@@ -7,7 +7,6 @@ import Link from '@material-ui/core/Link';
 import Navigator from './Navigator';
 import MainContent from './MainContent';
 import Header from './Header';
-import ProService from '../util/PropresenterService';
 
 function Copyright() {
     return (
@@ -167,10 +166,6 @@ const styles = {
 function Paperbase(props) {
     const [mobileOpen, setMobileOpen] = useState(false);
     const { classes } = props;
-
-    useEffect(() => {
-        ProService.connect('192.168.5.151');
-    }, []);
 
     const handleDrawerToggle = () => {
         setMobileOpen(!mobileOpen);

@@ -1,3 +1,5 @@
+import store from '../store';
+import { setConnected } from '../store/actions';
 
 function getSlidesFromResponse(slideGroups) {
     return slideGroups.reduce((acc, curr) => {
@@ -14,12 +16,12 @@ class ProPresenterService {
 
     checkSocket() {
         if (!this.socket) {
-            console.error('SOCKET NOT CONNECTED');
+            console.error('Socket not connected');
             return false;
         }
 
         if (this.socket.readyState !== 1) {
-            console.error('SOCKET NOT READY');
+            console.error('Socket not ready');
             return false;
         }
 
@@ -34,25 +36,43 @@ class ProPresenterService {
                 this.socket.onmessage = this.handleMessage(res, rej);
                 this.socket.send(json);
             } else {
-                console.error('SOCKET EMIT FAILED');
+                console.error('Socket emit failed');
                 rej();
             }
         });
+    }
+
+    disconnect() {
+        if(this.socket) {
+            this.socket.close();
+            this.socket = null;
+        }
+
+        this.authenticated = false;
+        store.dispatch(setConnected(false));
     }
 
     connect(remoteIp = '', password = 'control', port = 50001) {
         this.password = password;
 
         if(!remoteIp) {
-            console.error('REMOTE IP MUST BE SET BEFORE CONNECTING');
-            return;
+            const msg = 'REMOTE IP MUST BE SET BEFORE CONNECTING';
+            console.error(msg);
+            return Promise.reject(new Error(msg));
         }
 
-        this.socket = new WebSocket(`ws://${remoteIp}:${port}/remote`);
-        this.listen();
+        return new Promise((res, rej) => {
+            try {
+                this.socket = new WebSocket(`ws://${remoteIp}:${port}/remote`);
+                this.listen(res, rej);
+            } catch (error) {
+                this.socket = null;
+                rej();
+            }
+        });
     }
 
-    listen() {
+    listen(res, rej) {
         const me = this;
 
         this.socket.onopen = function() {
@@ -61,17 +81,25 @@ class ProPresenterService {
                 window.onbeforeunload = () => {
                     this.socket.close();
                 };
+                res(this.authenticated);
+            }).catch((err) => {
+                this.authenticated = false;
+                rej(err);
+            }).finally(() => {
+                store.dispatch(setConnected(this.authenticated));
             });
         };
 
         this.socket.onerror = function(err) {
-            console.error('WebSocket error:', err);
+            console.error('WebSocket error');
+            store.dispatch(setConnected(false));
         };
 
         this.socket.onclose = function() {
             console.log('WebSocket closed.');
             this.socket = null;
             this.authenticated = false;
+            store.dispatch(setConnected(false));
         };
     }
 
@@ -82,11 +110,12 @@ class ProPresenterService {
             switch (msg.action) {
             case 'authenticate':
                 if(msg.error) {
-                    console.log(msg.error);
+                    rej(msg.error);
+                } else {
+                    res();
                 }
 
                 console.log(`authenticated: ${msg.authenticated === 1 && msg.controller === 1}`);
-                res();
                 break;
             case 'libraryRequest':
                 res(msg.library);

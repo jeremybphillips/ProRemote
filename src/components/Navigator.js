@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import clsx from 'clsx';
 import { makeStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
@@ -7,12 +7,13 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import SettingsIcon from '@material-ui/icons/Settings';
-import RefreshIcon from '@material-ui/icons/Refresh';
 import ArrowForwardIosIcon from '@material-ui/icons/ArrowForwardIos';
 import SearchField from './form/SearchField';
+import ConfigModal from './dialog/ConfigModal';
 import ProService from '../util/PropresenterService';
 import { connect } from 'react-redux';
 import { setLibrary, setPresentation, setLoadingStatus } from '../store/actions';
+import { throttle } from 'lodash';
 
 const useStyles = makeStyles(theme => ({
     appHeader: {
@@ -64,17 +65,22 @@ const useStyles = makeStyles(theme => ({
 
 function Navigator({ library, dispatch, ...other }) {
     const classes = useStyles();
+    let [presList, setPresList] = useState([...library]);
+    let [openModal, setOpenModal] = useState(false);
 
     useEffect(() => {
-        getLibrary();
-    }, []);
+        if(!library.length){
+            ProService.getLibrary().then((library) => {
+                setPresList(library);
+                dispatch(setLibrary(library));
+            });
+        } else {
+            setPresList(library);
+        }
+    }, [library]);
 
     const onSettingsClick = () => {
-        console.log('launch modal');
-    };
-
-    const onRefreshClick = () => {
-        getLibrary();
+        setOpenModal(true);
     };
 
     const onPresClick = async (e) => {
@@ -86,52 +92,45 @@ function Navigator({ library, dispatch, ...other }) {
         dispatch(setLoadingStatus(false));
     };
 
-    const getLibrary = async () => {
-        try {
-            const library = await ProService.getLibrary();
-            if(!library) {
-                return;
-            }
+    const onSearchFieldChange = throttle((value) => {
+        setPresList(library.filter((title) => title.toLocaleLowerCase().includes(value.toLocaleLowerCase())));
+    }, 800);
 
-            dispatch(setLibrary(library));
-        } catch (e) {
-            console.error(e.message);
-        }
+    const onModalClose = () => {
+        setOpenModal(false);
     };
 
     return (
-        <Drawer variant="permanent" {...other}>
-            <List disablePadding>
-                <ListItem className={clsx(classes.firebase, classes.appHeader)}>
-                    <div className={classes.appTitle}>ProRemote</div>
-                    <ListItem button disableRipple className={classes.headerButton} onClick={onSettingsClick}>
-                        <ListItemIcon>
-                            <SettingsIcon />
-                        </ListItemIcon>
+        <React.Fragment>
+            <ConfigModal open={openModal} onClose={onModalClose} />
+            <Drawer variant="permanent" {...other}>
+                <List disablePadding>
+                    <ListItem className={clsx(classes.firebase, classes.appHeader)}>
+                        <div className={classes.appTitle}>ProRemote</div>
+                        <ListItem button disableRipple className={classes.headerButton} onClick={onSettingsClick}>
+                            <ListItemIcon>
+                                <SettingsIcon />
+                            </ListItemIcon>
+                        </ListItem>
                     </ListItem>
-                    <ListItem button disableRipple className={classes.headerButton} onClick={onRefreshClick}>
-                        <ListItemIcon>
-                            <RefreshIcon />
-                        </ListItemIcon>
-                    </ListItem>
-                </ListItem>
-                <ListItem className={classes.categoryHeader}>
-                    <ListItemText classes={{ primary: classes.categoryHeaderPrimary }}>
-                        <SearchField />
-                    </ListItemText>
-                </ListItem>
-                {library.map((pres, i) => (
-                    <ListItem key={i} button presentation={pres} className={classes.item} onClick={onPresClick}>
-                        <ListItemText className={classes.itemText}>
-                            { pres.split('.')[0] }
+                    <ListItem className={classes.categoryHeader}>
+                        <ListItemText classes={{ primary: classes.categoryHeaderPrimary }}>
+                            <SearchField onChange={onSearchFieldChange} />
                         </ListItemText>
-                        <ListItemIcon className={classes.arrowIcon}>
-                            <ArrowForwardIosIcon />
-                        </ListItemIcon>
                     </ListItem>
-                ))}
-            </List>
-        </Drawer>
+                    {presList.map((pres, i) => (
+                        <ListItem key={i} button presentation={pres} className={classes.item} onClick={onPresClick}>
+                            <ListItemText className={classes.itemText}>
+                                { pres.split('.')[0] }
+                            </ListItemText>
+                            <ListItemIcon className={classes.arrowIcon}>
+                                <ArrowForwardIosIcon />
+                            </ListItemIcon>
+                        </ListItem>
+                    ))}
+                </List>
+            </Drawer>
+        </React.Fragment>
     );
 }
 

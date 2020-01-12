@@ -48,17 +48,17 @@ const useStyles = makeStyles(theme => ({
     }
 }));
 
-function SearchField({ ...other }){
+function SearchField(props) {
     const classes = useStyles();
     const [value, setValue] = useState('');
+    const { onChange, ...other } = props;
 
     const handleInput = (e) => {
-        setValue(e.target.value);
-    };
+        const value = e.target.value;
 
-    // const handleSearchRequest = (value) => {
-    //     console.log(value.trim());
-    // };
+        setValue(value);
+        onChange(value);
+    };
 
     const handleClear = () => {
         setValue('');

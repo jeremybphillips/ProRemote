@@ -8,6 +8,8 @@ const defaultState = {
     },
     activeSlide: null,
     loading: false,
+    ip: '', // probably don't need this
+    connected: false,
 };
 
 const store = createStore((state = defaultState, action) => {
@@ -22,15 +24,15 @@ const store = createStore((state = defaultState, action) => {
             ...state,
             activePresentation: action.presentation
         };
-    case 'SET_LOADING_STATUS':
+    case 'SET_CONNECTED':
         return {
             ...state,
-            loading: action.loading
+            connected: action.connected
         };
-    case 'SET_ACTIVE_SLIDE':
+    case 'SET_IP':
         return {
             ...state,
-            activeSlide: action.activeSlide
+            ip: action.ip
         };
     default:
         return state;
